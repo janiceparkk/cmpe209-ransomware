@@ -8,9 +8,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Dataset location
-Place the dataset here:
-
-data/raw/combined_without_3gram.csv
+```data/raw/combined_without_3gram.csv```
 
 ## Main columns
 - ID
@@ -34,5 +32,3 @@ Testing:
 ## Run order
 1. inspect_dataset.py
 2. prepare_data.py
-3. train_baseline_rf.py
-4. evaluate_predictions.py
