@@ -4,6 +4,8 @@
 - **Sample ID:** {{ID}}
 - **Filename:** {{filename}}
 - **Analysis Date:** {{analysis_date}}
+- **Model Name:** {{model_name}}
+- **Feature Strategy:** {{feature_strategy}}
 - **Sandbox Tool:** {{sandbox_tool}}
 - **Environment:** {{environment}}
 
@@ -16,18 +18,22 @@
 - **Risk Level:** {{risk_level}}
 
 ### Summary for User
-This sample was analyzed using a machine learning pipeline and a sandbox-oriented report template. The sample appears to be:
+This sample was analyzed using the **{{model_name}}** model.
 
 **{{short_conclusion}}**
 
 ---
 
-## 3. Static Indicators
+## 3. Static ML Analysis
+### Model Used
+- **Model Name:** {{model_name}}
+- **Feature Strategy:** {{feature_strategy}}
+
 ### Important Structural Indicators
 {{top_indicators_bullets}}
 
 ### Notes
-These indicators come from the structural feature dataset used for classification. They represent important model-selected indicators associated with ransomware or benign software.
+These indicators represent the most influential model-selected features associated with the prediction.
 
 ---
 
@@ -80,21 +86,15 @@ These indicators come from the structural feature dataset used for classificatio
 {{top_features_numbered}}
 
 ### Interpretation
-The model classified this sample based on the influential structural indicators listed above. A higher ransomware probability suggests stronger similarity to ransomware samples in the training data.
+The model classified this sample based on the structural indicators listed above. These features were the most influential in the final prediction.
 
 ---
 
 ## 6. Combined Assessment
-### Why it was flagged
-- Static indicators suggest: {{static_assessment}}
-- Sandbox behavior suggests: {{sandbox_assessment}}
-- Combined conclusion: {{combined_conclusion}}
+- **Static assessment:** {{static_assessment}}
 
-### Analyst Note
-This report combines:
-1. Static ML classification
-2. Dynamic sandbox behavior placeholders or observations
-3. A readable explanation for the user
+### Why it was flagged
+{{why_flagged_bullets}}
 
 ---
 
@@ -108,7 +108,6 @@ This report combines:
 - **Memory dump available:** {{memory_dump_available}}
 - **Dropped files extracted:** {{dropped_files_extracted}}
 - **Screenshots available:** {{screenshots_available}}
-- **Raw sandbox JSON available:** {{raw_json_available}}
 
 ---
 

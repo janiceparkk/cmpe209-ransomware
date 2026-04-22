@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 # RF_B.py This is a random forest model with feature engineering by summing API category counts, DLL category counts, 
 # suspicious capability flags, packing/obfuscation factors, ratios and summary stats
+import os
 import pandas as pd
 import numpy as np
 import RF_A as rf_a
@@ -72,14 +74,46 @@ def engineer_features(df):
 
     return df
 
+def save_outputs(model_name, rf_model, X_test_fe, meta_test, y_pred, y_proba, metrics):
+    os.makedirs("results", exist_ok=True)
+    os.makedirs("saved_model", exist_ok=True)
+
+    prediction_report = meta_test.copy()
+    prediction_report["predicted_RG"] = y_pred
+    prediction_report["ransomware_probability"] = y_proba
+    prediction_report["risk_level"] = prediction_report["ransomware_probability"].apply(rf_a.risk_level)
+    prediction_report["model_name"] = model_name
+    prediction_report["feature_strategy"] = "Feature-engineered grouped API and IOC indicators"
+
+    prediction_report.to_csv(f"results/{model_name}_prediction_report.csv", index=False)
+
+    feature_importance = pd.DataFrame({
+        "feature": X_test_fe.columns,
+        "importance": rf_model.feature_importances_
+    }).sort_values(by="importance", ascending=False)
+    feature_importance.to_csv(f"results/{model_name}_feature_importance.csv", index=False)
+
+    metrics_df = pd.DataFrame([metrics])
+    metrics_df["model_name"] = model_name
+    metrics_df.to_csv(f"results/{model_name}_metrics.csv", index=False)
+
+    joblib.dump(rf_model, f"saved_model/{model_name}.pk1")
+    joblib.dump(X_test_fe.columns.tolist(), f"saved_model/{model_name}_feature_cols.pk1")
+
+    print(f"Saved: results/{model_name}_prediction_report.csv")
+    print(f"Saved: results/{model_name}_feature_importance.csv")
+    print(f"Saved: results/{model_name}_metrics.csv")
+    print(f"Saved: saved_model/{model_name}.pk1")
+    print(f"Saved: saved_model/{model_name}_feature_cols.pk1")
+
+
 def main():
-    #LOCAL_PATH = "/Users/doro/Library/CloudStorage/OneDrive-Personal/SCHOOL/SJSU/Semester 4/CMPE 209/project/cmpe209-ransomware/"
-    LOCAL_PATH = "/Users/yanpingli/Desktop/209proj/cmpe209-ransomware/"
-    INPUT_PATH = LOCAL_PATH + "data/processed"
+    INPUT_PATH = "data/processed"
+    model_name = "rf_b_feature_engineer"
 
     print("Running random forest with feature engineering ------------------------------------------")
 
-    X_TRAIN, Y_TRAIN, X_TEST, Y_TEST = rf_a.read_data(INPUT_PATH)
+    X_TRAIN, Y_TRAIN, X_TEST, Y_TEST, meta_test = rf_a.read_data(INPUT_PATH)
 
     print ("Start Feature Engineering --------------------------------------------")
     
@@ -92,10 +126,8 @@ def main():
     
     print("Training random forest model with Feature Engineering ------------------------------------------")
     rf_model = rf_a.run_random_forest_model(X_train_fe, Y_TRAIN)
-    joblib.dump(rf_model, "saved_model/rf_b_feature_engineer.pk1")
-    joblib.dump(X_train_fe.columns.tolist(), "saved_model/rf_b_feature_col.pk1")
-    rf_a.evaluate_random_forest_model(rf_model, X_test_fe, Y_TEST)
-    
+    y_pred, y_proba, metrics = rf_a.evaluate_random_forest_model(rf_model, X_test_fe, Y_TEST)
+    save_outputs(model_name, rf_model, X_test_fe, meta_test, y_pred, y_proba, metrics)
     print("Finished --------------------------------------------------------------")
 
 if __name__ == "__main__":
