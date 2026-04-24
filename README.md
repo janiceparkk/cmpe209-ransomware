@@ -30,6 +30,8 @@ Testing:
 - goodware with ID >= 12000
 - ransomware families 26 to 40
 
+The beneficial of this split approach is to test on ransomware that the model never seen. This reduces overfitting to specific ransomware families and actually learning general ransomware patterns. This approach also simulates real deployment scenarios to future and unseen families.
+
 ## Run order
 1. inspect_dataset.py
 2. prepare_data.py
