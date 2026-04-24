@@ -1,6 +1,7 @@
 # Ransomware ML Project
 
 This project uses the Mendeley `combined_without_3gram.csv` dataset for ransomware vs goodware classification.
+https://data.mendeley.com/datasets/yzhcvn7sj5/3
 
 ## Installation Requirements 
 ```
@@ -32,3 +33,11 @@ Testing:
 ## Run order
 1. inspect_dataset.py
 2. prepare_data.py
+
+## Random Forest
+1. RF_A.py - Baseline random forest model with all original feautres
+2. RF_B.py - Random forest with original and engineered features based on ransomware behavior counts.
+3. RF_C.py - Random forest with only engineered top k features.
+**Modify variable LOCAL_PATH based on your own path
+**All models and corresponding feature list is saved in /saved_model
+
