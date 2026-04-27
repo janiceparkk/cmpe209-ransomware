@@ -25,8 +25,9 @@ This file was analyzed using the **RF_C_top50** model with the following feature
 - Overlay
 
 ## What was observed
-- This report is based on the machine learning pipeline.
-- No dynamic sandbox fields were provided for this sample.
+- This report is based on the RF_C_top50 machine learning pipeline.
+- The feature strategy used was: Top-50 selected features after feature engineering.
+- The model did not find a strong ransomware-like structural pattern.
 
 ## What you should do
 - No strong ransomware verdict was assigned.

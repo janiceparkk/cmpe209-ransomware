@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import argparse
 import os
 from datetime import datetime
@@ -25,15 +24,6 @@ def safe_get(row: pd.Series, col: str, default: str = "N/A") -> str:
     if col in row.index and pd.notna(row[col]):
         return str(row[col])
     return default
-
-
-def to_yes_no(value) -> str:
-    s = str(value).strip().lower()
-    if s in {"yes", "true", "1"}:
-        return "Yes"
-    if s in {"no", "false", "0"}:
-        return "No"
-    return str(value)
 
 
 def risk_to_confidence_text(probability: float) -> str:
@@ -93,9 +83,9 @@ def sanitize_filename(value: str) -> str:
 def choose_recommended_actions(risk_level: str):
     if risk_level == "High":
         return [
-            "Do not execute this file outside the sandbox.",
+            "Do not trust or execute this file in a normal environment.",
             "Quarantine the sample immediately.",
-            "Preserve logs, predictions, and related artifacts.",
+            "Preserve the report and prediction results for review.",
             "Escalate to the team for deeper investigation.",
         ]
     if risk_level == "Medium":
@@ -132,33 +122,26 @@ def choose_why_flagged(probability: float, top_indicator_names, model_name: str,
     ]
 
 
-def choose_observed_text(row: pd.Series):
-    observed = []
+def choose_observed_text(model_name: str, feature_strategy: str, risk_level: str):
+    observations = [
+        f"This report is based on the {model_name} machine learning pipeline.",
+        f"The feature strategy used was: {feature_strategy}.",
+    ]
 
-    if "process_count" in row.index:
-        observed.append(f"Processes observed: {safe_get(row, 'process_count', 'Not provided')}")
-    if "files_modified" in row.index:
-        observed.append(f"Files modified: {safe_get(row, 'files_modified', 'Not provided')}")
-    if "domains_contacted" in row.index:
-        observed.append(f"Domains contacted: {safe_get(row, 'domains_contacted', 'Not provided')}")
-    if "signature_1" in row.index:
-        observed.append(f"Behavioral signature: {safe_get(row, 'signature_1', 'None provided')}")
+    if risk_level == "High":
+        observations.append("The model found a strong ransomware-like structural pattern.")
+    elif risk_level == "Medium":
+        observations.append("The model found suspicious structural indicators that merit review.")
+    else:
+        observations.append("The model did not find a strong ransomware-like structural pattern.")
 
-    if not observed:
-        observed = [
-            "This report is based on the machine learning pipeline.",
-            "No dynamic sandbox fields were provided for this sample.",
-        ]
-
-    return observed
+    return observations
 
 
 def build_replacements(
     sample_row: pd.Series,
     top_features,
     analysis_date: str,
-    sandbox_tool: str,
-    environment: str,
     override_model_name: str = None,
     override_feature_strategy: str = None,
 ):
@@ -186,16 +169,12 @@ def build_replacements(
         else "The model did not identify a strong ransomware-like static pattern."
     )
 
-    sandbox_assessment = "No sandbox summary available for this report."
-    if "domains_contacted" in sample_row.index or "files_modified" in sample_row.index:
-        sandbox_assessment = "Dynamic fields were available and can be reviewed alongside the ML output."
-
     combined_conclusion = (
-        "The available evidence supports a ransomware-likely verdict."
+        "The available static evidence supports a ransomware-likely verdict."
         if probability >= 0.70
-        else "The available evidence supports a suspicious classification that needs further review."
+        else "The available static evidence supports a suspicious classification that needs further review."
         if probability >= 0.40
-        else "The available evidence does not currently support a high-risk ransomware verdict."
+        else "The available static evidence does not currently support a high-risk ransomware verdict."
     )
 
     final_statement = (
@@ -203,17 +182,14 @@ def build_replacements(
         f"with {confidence_text.lower()} confidence and {risk_level.lower()} risk."
     )
 
-    short_conclusion = (
-        f"{model_name} classified this sample using {feature_strategy}."
-    )
+    short_conclusion = f"{model_name} classified this sample using {feature_strategy}."
 
     replacements = {
         "ID": safe_get(sample_row, "ID", "N/A"),
         "filename": safe_get(sample_row, "filename", "N/A"),
         "analysis_date": analysis_date,
-        "sandbox_tool": sandbox_tool,
-        "environment": environment,
-        "cuckoo_task_id": safe_get(sample_row, "cuckoo_task_id", "Not provided"),
+        "model_name": model_name,
+        "feature_strategy": feature_strategy,
         "overall_verdict": overall_verdict,
         "ml_prediction": ml_prediction,
         "ml_confidence": f"{probability:.4f}",
@@ -221,50 +197,17 @@ def build_replacements(
         "short_conclusion": short_conclusion,
         "top_indicators_bullets": format_bullets(top_indicator_names),
         "top_features_numbered": format_numbered(top_features),
-        "process_count": safe_get(sample_row, "process_count", "Not provided"),
-        "suspicious_child_processes": safe_get(sample_row, "suspicious_child_processes", "Not provided"),
-        "command_line_anomalies": safe_get(sample_row, "command_line_anomalies", "Not provided"),
-        "process_injection": safe_get(sample_row, "process_injection", "Not provided"),
-        "process_patterns": safe_get(sample_row, "process_patterns", "Not provided"),
-        "files_created": safe_get(sample_row, "files_created", "Not provided"),
-        "files_modified": safe_get(sample_row, "files_modified", "Not provided"),
-        "files_deleted": safe_get(sample_row, "files_deleted", "Not provided"),
-        "dropped_files": safe_get(sample_row, "dropped_files", "Not provided"),
-        "suspicious_extensions": safe_get(sample_row, "suspicious_extensions", "Not provided"),
-        "encryption_behavior": safe_get(sample_row, "encryption_behavior", "Not provided"),
-        "registry_created": safe_get(sample_row, "registry_created", "Not provided"),
-        "registry_modified": safe_get(sample_row, "registry_modified", "Not provided"),
-        "persistence_changes": safe_get(sample_row, "persistence_changes", "Not provided"),
-        "startup_changes": safe_get(sample_row, "startup_changes", "Not provided"),
-        "domains_contacted": safe_get(sample_row, "domains_contacted", "Not provided"),
-        "ips_contacted": safe_get(sample_row, "ips_contacted", "Not provided"),
-        "protocols_observed": safe_get(sample_row, "protocols_observed", "Not provided"),
-        "dns_requests": safe_get(sample_row, "dns_requests", "Not provided"),
-        "http_traffic": safe_get(sample_row, "http_traffic", "Not provided"),
-        "suspicious_outbound": safe_get(sample_row, "suspicious_outbound", "Not provided"),
-        "behavior_signatures_bullets": format_bullets([
-            safe_get(sample_row, "signature_1", ""),
-            safe_get(sample_row, "signature_2", ""),
-            safe_get(sample_row, "signature_3", ""),
-        ]),
-        "screenshot_count": safe_get(sample_row, "screenshot_count", "Not provided"),
-        "ui_behavior": safe_get(sample_row, "ui_behavior", "Not provided"),
-        "ransom_note_observed": safe_get(sample_row, "ransom_note_observed", "Not provided"),
         "static_assessment": static_assessment,
-        "sandbox_assessment": sandbox_assessment,
         "combined_conclusion": combined_conclusion,
         "recommended_actions_bullets": format_bullets(choose_recommended_actions(risk_level)),
-        "pcap_available": to_yes_no(safe_get(sample_row, "pcap_available", "No")),
-        "memory_dump_available": to_yes_no(safe_get(sample_row, "memory_dump_available", "No")),
-        "dropped_files_extracted": to_yes_no(safe_get(sample_row, "dropped_files_extracted", "No")),
-        "screenshots_available": to_yes_no(safe_get(sample_row, "screenshots_available", "No")),
-        "raw_json_available": to_yes_no(safe_get(sample_row, "raw_json_available", "No")),
         "confidence_text": confidence_text,
         "final_statement": final_statement,
         "why_flagged_bullets": format_bullets(
             choose_why_flagged(probability, top_indicator_names, model_name, feature_strategy)
         ),
-        "what_was_observed_bullets": format_bullets(choose_observed_text(sample_row)),
+        "what_was_observed_bullets": format_bullets(
+            choose_observed_text(model_name, feature_strategy, risk_level)
+        ),
     }
 
     return replacements
@@ -279,14 +222,12 @@ def render_template(template_text: str, replacements: dict) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate markdown reports from model-specific prediction outputs.")
-    parser.add_argument("--input", required=True, help="Prediction report CSV, e.g. results/rf_b_feature_engineer_prediction_report.csv")
-    parser.add_argument("--feature-importance", required=True, help="Feature importance CSV, e.g. results/rf_b_feature_engineer_feature_importance.csv")
+    parser.add_argument("--input", required=True, help="Prediction report CSV")
+    parser.add_argument("--feature-importance", required=True, help="Feature importance CSV")
     parser.add_argument("--sample-id", default=None, help="Optional sample ID to generate only one report")
     parser.add_argument("--top-n", type=int, default=5, help="Number of top features to include")
     parser.add_argument("--model-name", default=None, help="Optional override for model name in the report")
     parser.add_argument("--feature-strategy", default=None, help="Optional override for feature strategy in the report")
-    parser.add_argument("--sandbox-tool", default="Static ML Pipeline", help="Label shown in the report")
-    parser.add_argument("--environment", default="Ubuntu VM / processed dataset workflow", help="Environment shown in the report")
     args = parser.parse_args()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -309,8 +250,6 @@ def main():
             sample_row=row,
             top_features=top_features,
             analysis_date=analysis_date,
-            sandbox_tool=args.sandbox_tool,
-            environment=args.environment,
             override_model_name=args.model_name,
             override_feature_strategy=args.feature_strategy,
         )
@@ -320,7 +259,7 @@ def main():
 
         sample_id = replacements["ID"]
         filename = sanitize_filename(replacements["filename"])
-        model_label = sanitize_filename(args.model_name or safe_get(row, "model_name", "model"))
+        model_label = sanitize_filename(replacements["model_name"])
 
         tech_path = os.path.join(OUTPUT_DIR, f"{model_label}_technical_report_{sample_id}_{filename}.md")
         user_path = os.path.join(OUTPUT_DIR, f"{model_label}_user_report_{sample_id}_{filename}.md")

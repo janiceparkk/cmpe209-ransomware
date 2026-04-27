@@ -25,13 +25,14 @@ This file was analyzed using the **RF_B** model with the following feature strat
 - LOAD_CONFIG_Size
 
 ## What was observed
-- This report is based on the machine learning pipeline.
-- No dynamic sandbox fields were provided for this sample.
+- This report is based on the RF_B machine learning pipeline.
+- The feature strategy used was: Feature-engineered grouped API and IOC indicators.
+- The model found a strong ransomware-like structural pattern.
 
 ## What you should do
-- Do not execute this file outside the sandbox.
+- Do not trust or execute this file in a normal environment.
 - Quarantine the sample immediately.
-- Preserve logs, predictions, and related artifacts.
+- Preserve the report and prediction results for review.
 - Escalate to the team for deeper investigation.
 
 ## Final Message

@@ -3,12 +3,9 @@
 ## 1. Sample Information
 - **Sample ID:** 22000
 - **Filename:** 002e70b8fde758f88adc506f3c71df1eb32ce1a2b5bec45f3e8e43dba923709f
-- **Analysis Date:** 2026-04-27 20:45:46
+- **Analysis Date:** 2026-04-27 21:05:14
 - **Model Name:** RF_B
 - **Feature Strategy:** Feature-engineered grouped API and IOC indicators
-- **Sandbox Tool:** Static ML Pipeline
-- **Environment:** Ubuntu VM / processed dataset workflow
-- **Cuckoo Task ID:** Not provided
 
 ---
 
@@ -42,47 +39,7 @@ These indicators represent the most influential model-selected features associat
 
 ---
 
-## 4. Dynamic Sandbox Findings
-### 4.1 Process Activity
-- Number of processes created: Not provided
-- Suspicious child processes observed: Not provided
-- Command-line anomalies: Not provided
-- Unexpected process injection behavior: Not provided
-- Process termination or spawning patterns: Not provided
-
-### 4.2 File System Activity
-- Files created: Not provided
-- Files modified: Not provided
-- Files deleted: Not provided
-- Dropped files: Not provided
-- Suspicious file extensions or renaming behavior: Not provided
-- Evidence of encryption-like behavior: Not provided
-
-### 4.3 Registry Activity
-- Registry keys created: Not provided
-- Registry keys modified: Not provided
-- Persistence-related changes: Not provided
-- Startup/run key changes: Not provided
-
-### 4.4 Network Activity
-- Domains contacted: Not provided
-- IP addresses contacted: Not provided
-- Protocols observed: Not provided
-- DNS requests: Not provided
-- HTTP/HTTPS traffic: Not provided
-- Suspicious outbound communication: Not provided
-
-### 4.5 Behavioral Signatures
-- None provided
-
-### 4.6 Screenshots / UI Evidence
-- Screenshot count: Not provided
-- Notable user-facing behavior: Not provided
-- Ransom note observed: Not provided
-
----
-
-## 5. Machine Learning Output
+## 4. Machine Learning Output
 - **Predicted Class:** Ransomware
 - **Probability of Ransomware:** 0.9500
 - **Assigned Risk Level:** High
@@ -99,10 +56,9 @@ The model classified this sample based on the structural indicators listed above
 
 ---
 
-## 6. Combined Assessment
+## 5. Assessment
 - **Static assessment:** The model relied on structural indicators associated with ransomware-like samples.
-- **Sandbox assessment:** No sandbox summary available for this report.
-- **Combined conclusion:** The available evidence supports a ransomware-likely verdict.
+- **Combined conclusion:** The available static evidence supports a ransomware-likely verdict.
 
 ### Why it was flagged
 - The RF_B model classified this sample as ransomware-like.
@@ -111,24 +67,15 @@ The model classified this sample based on the structural indicators listed above
 
 ---
 
-## 7. Recommended Action
-- Do not execute this file outside the sandbox.
+## 6. Recommended Action
+- Do not trust or execute this file in a normal environment.
 - Quarantine the sample immediately.
-- Preserve logs, predictions, and related artifacts.
+- Preserve the report and prediction results for review.
 - Escalate to the team for deeper investigation.
 
 ---
 
-## 8. Artifact Summary
-- **PCAP available:** No
-- **Memory dump available:** No
-- **Dropped files extracted:** No
-- **Screenshots available:** No
-- **Raw sandbox JSON available:** No
-
----
-
-## 9. Final Verdict
+## 7. Final Verdict
 **Final Classification:** Ransomware Likely  
 **Confidence:** Very High  
 **Risk Level:** High  
