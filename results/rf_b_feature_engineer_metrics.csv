@@ -1,0 +1,2 @@
+accuracy,precision,recall,f1_score,tn,fp,fn,tp,model_name
+0.8648648648648649,0.9906542056074766,0.825974025974026,0.9008498583569405,130,3,67,318,rf_b_feature_engineer
